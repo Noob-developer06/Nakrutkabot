@@ -16,7 +16,7 @@ from handlers.admin import admin_router
 logging.basicConfig(level=logging.INFO)
 
 
-dp.message.middleware(PrivateFloodMiddleware())
+#dp.message.middleware(PrivateFloodMiddleware())
 
 dp.include_routers(admin_router)
 dp.include_routers(user_router)
