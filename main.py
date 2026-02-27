@@ -9,7 +9,7 @@ from middlewares import PrivateFloodMiddleware
 
 
 from database.requests import create_table
-from database.run_funk import order_updater
+from database.run_funks import order_updater
 from handlers.user import user_router
 from handlers.admin import admin_router
 # Log sozlamalari
