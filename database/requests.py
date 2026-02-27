@@ -8,8 +8,16 @@ from loader import bot
 # =======================
 # 1️⃣ Create table
 # =======================
+
 async def create_table():
-    async with aiosqlite.connect(DB_PATH) as db:
+    async with aiosqlite.connect(DB_PATH, timeout=10) as db:
+        
+        # 🔥 Anti-lock sozlamalar
+        await db.execute("PRAGMA journal_mode=WAL;")
+        await db.execute("PRAGMA synchronous=NORMAL;")
+        await db.execute("PRAGMA busy_timeout = 5000;")
+        await db.execute("PRAGMA foreign_keys = ON;")
+
         # users
         await db.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -21,6 +29,7 @@ async def create_table():
             created_at DATETIME DEFAULT (datetime('now', '+5 hours')),
             banned INTEGER DEFAULT 0
         )""")
+
         # payments
         await db.execute("""
         CREATE TABLE IF NOT EXISTS payments (
@@ -29,6 +38,7 @@ async def create_table():
             amount INTEGER,
             created_at DATETIME DEFAULT (datetime('now', '+5 hours'))
         )""")
+
         # apis
         await db.execute("""
         CREATE TABLE IF NOT EXISTS apis (
@@ -37,12 +47,14 @@ async def create_table():
             key TEXT,
             currency TEXT
         )""")
+
         # platforms
         await db.execute("""
         CREATE TABLE IF NOT EXISTS platforms (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT
         )""")
+
         # categories
         await db.execute("""
         CREATE TABLE IF NOT EXISTS categories (
@@ -50,6 +62,7 @@ async def create_table():
             name TEXT,
             platform_id INTEGER
         )""")
+
         # services
         await db.execute("""
         CREATE TABLE IF NOT EXISTS services (
@@ -66,6 +79,7 @@ async def create_table():
             cancel INTEGER,
             activity INTEGER DEFAULT 1        
         )""")
+
         # orders
         await db.execute("""
         CREATE TABLE IF NOT EXISTS orders (
@@ -80,6 +94,7 @@ async def create_table():
             created_at DATETIME DEFAULT (datetime('now', '+5 hours')),
             completed_at DATETIME DEFAULT NULL
         )""")
+
         await db.commit()
 
 
