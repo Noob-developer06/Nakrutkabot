@@ -45,3 +45,23 @@ def translate_status(status: str) -> str:
         "Partial": "⚠️ Qisman bajarildi"
     }
     return status_map.get(status.strip(), status)
+
+
+
+
+def format_time(seconds):
+    parts = []
+    
+    hours = seconds // 3600
+    if hours > 0:
+        parts.append(f"{hours} soat")
+    
+    minutes = (seconds % 3600) // 60
+    if minutes > 0:
+        parts.append(f"{minutes} daqiqa")
+    
+    secs = seconds % 60
+    if secs > 0 or not parts:  # agar faqat 0 sekund bo‘lsa ham chiqarish
+        parts.append(f"{secs} sekunt")
+    
+    return " ".join(parts)
