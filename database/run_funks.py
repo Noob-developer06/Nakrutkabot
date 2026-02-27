@@ -44,7 +44,7 @@ async def edit_order():
                         order_id=order_id,
                         link=link,
                         quantity=quantity
-                    ))
+                    ), disable_web_page_preview=True)
                 
             elif status == "Canceled":
                 user = await get_user(user_id)
@@ -57,7 +57,7 @@ async def edit_order():
                             link=link,
                             quantity=quantity,
                             paid_amount=price
-                        ))
+                        ), disable_web_page_preview=True)
             elif status == "Partial":
                 user = await get_user(user_id)
                 if user:
