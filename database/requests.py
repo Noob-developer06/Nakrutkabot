@@ -299,9 +299,9 @@ async def get_services(category_id: int):
             SELECT id, name, api_id, api_service_id, price, min_qty, max_qty, refill, cancel, activity 
             FROM services 
             WHERE category_id = ? AND activity = 1
+            ORDER BY price ASC
         """, (category_id,))
         return await cursor.fetchall()
-
 
 async def get_service(service_id: int):
     async with aiosqlite.connect(DB_PATH) as db:
