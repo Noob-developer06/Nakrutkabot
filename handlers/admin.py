@@ -358,7 +358,7 @@ class UpdateService(AdminHandler):
         @self.router.callback_query(F.data.startswith("edit:"))
         async def select_field(callback: CallbackQuery, state: FSMContext):
             try:
-                key, service_id = callback.data.split(":")
+                _, key, service_id = callback.data.split(":")
                 service_id = int(service_id)
 
                 await state.update_data(service_id=service_id, key=key)
