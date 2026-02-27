@@ -10,6 +10,7 @@ from config import update_status_time, DB_PATH
 
 
 async def edit_order():
+    # 1️⃣ Faqat orderlarni olib chiqamiz
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute("""
             SELECT id, user_id, api_order_id, service_id, price, quantity, link
@@ -18,55 +19,44 @@ async def edit_order():
         """)
         orders = await cursor.fetchall()
 
-        for order in orders:
-            order_id, user_id, api_order_id, service_id, price, quantity, link = order
+    # 2️⃣ Endi DB yopilgan
+    for order in orders:
+        order_id, user_id, api_order_id, service_id, price, quantity, link = order
 
-            service = await get_service(service_id)
-            if not service:
-                continue
+        service = await get_service(service_id)
+        if not service:
+            continue
 
-            api_id = service["api_id"]
-            status_data = await get_status(api_id, api_order_id)
-            if not status_data:
-                continue
+        status_data = await get_status(service["api_id"], api_order_id)
+        if not status_data:
+            continue
 
-            status = status_data.get("status", "Pending")
-            await db.execute("UPDATE orders SET status = ? WHERE id = ?", (status, order_id))
+        status = status_data.get("status", "Pending")
 
-            if status == "Completed":
-                await db.execute(
-                    "UPDATE orders SET completed_at = datetime('now', '+5 hours') WHERE id = ?",
-                    (order_id,)
-                )
-                await bot.send_message(
-                    chat_id=user_id,
-                    text=msg10.format(
-                        order_id=order_id,
-                        link=link,
-                        quantity=quantity
-                    ))
-                
-            elif status == "Canceled":
-                user = await get_user(user_id)
-                if user:
-                    await add_balance(user_id, price)
-                    await bot.send_message(
-                        chat_id=user_id,
-                        text=msg11.format(
-                            order_id=order_id,
-                            link=link,
-                            quantity=quantity,
-                            paid_amount=price
-                        ))
-            elif status == "Partial":
-                user = await get_user(user_id)
-                if user:
-                    remains = status_data.get("remains", 0)
-                    give_price = int(price * (quantity - remains) / quantity)
-                    await add_balance(user_id, give_price)
+        # 3️⃣ Faqat update payti DB ochiladi
+        async with aiosqlite.connect(DB_PATH) as db:
+            await db.execute(
+                "UPDATE orders SET status = ? WHERE id = ?",
+                (status, order_id)
+            )
+            await db.commit()
 
-        # commit ni yagona qilamiz
-        await db.commit()
+        # 4️⃣ Message va balance update DB dan tashqarida
+        if status == "Completed":
+            await bot.send_message(
+                user_id,
+                msg10.format(order_id=order_id, link=link, quantity=quantity),
+                disable_web_page_preview=True
+            )
+
+        elif status == "Canceled":
+            await add_balance(user_id, price)
+            await bot.send_message(
+                user_id,
+                msg11.format(order_id=order_id, link=link, quantity=quantity, paid_amount=price),
+                disable_web_page_preview=True
+            )
+
 
 async def order_updater():
     while True:
