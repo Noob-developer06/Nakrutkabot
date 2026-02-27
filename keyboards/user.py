@@ -79,7 +79,7 @@ async def services_kb(category_id: int, platform_id: int, user_id: int):
       builder = InlineKeyboardBuilder()
       for service in services:
            price = service[4]
-           builder.add(InlineKeyboardButton(text=f"{service[1][:15]} - {price/100} so'm", callback_data=f"service:{service[0]}"))
+           builder.add(InlineKeyboardButton(text=f"{service[1][:32]} - {price/100} so'm", callback_data=f"service:{service[0]}"))
       builder.adjust(1)
       if user_id == ADMIN:
            builder.row(InlineKeyboardButton(text="➕ Qo'shish", callback_data=f"add_service:{category_id}"),
