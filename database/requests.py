@@ -9,80 +9,94 @@ from loader import bot
 # 1️⃣ Create table
 # =======================
 async def create_table():
-    async with aiosqlite.connect(DB_PATH) as db:
+    async with aiosqlite.connect(DB_PATH, timeout=20.0) as db:  # timeout=20 soniya – yozishda kutish vaqti
+        # Eng muhim: busy_timeout ni millisekundlarda o'rnatamiz (masalan 5000 = 5 soniya)
+        # Ko'p loyihalarda 5000–10000 oralig'i yaxshi ishlaydi
+        await db.execute("PRAGMA busy_timeout = 10000;")     # 10 soniya kutadi
+
+        # Qo'shimcha tavsiya etiladigan PRAGMA'lar (muammo kamaytirish va ishonchlilik uchun)
+        await db.execute("PRAGMA journal_mode = WAL;")       # Write-Ahead Logging – concurrency yaxshilanadi
+        await db.execute("PRAGMA synchronous = NORMAL;")     # Tezroq yozish, biroz xavfliroq (lekin bot uchun odatda yaxshi)
+        # agar juda muhim ma'lumotlar bo'lsa → synchronous = FULL qoldiring
+
         # users
         await db.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER UNIQUE,
-            balance INTEGER DEFAULT 0,
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id     INTEGER UNIQUE,
+            balance     INTEGER DEFAULT 0,
             ref_from_id INTEGER,
-            ref_bonus INTEGER DEFAULT 0,
-            created_at DATETIME DEFAULT (datetime('now', '+5 hours')),
-            banned INTEGER DEFAULT 0
+            ref_bonus   INTEGER DEFAULT 0,
+            created_at  DATETIME DEFAULT (datetime('now', '+5 hours')),
+            banned      INTEGER DEFAULT 0
         )""")
+
         # payments
         await db.execute("""
         CREATE TABLE IF NOT EXISTS payments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            amount INTEGER,
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id    INTEGER,
+            amount     INTEGER,
             created_at DATETIME DEFAULT (datetime('now', '+5 hours'))
         )""")
+
         # apis
         await db.execute("""
         CREATE TABLE IF NOT EXISTS apis (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            url TEXT,
-            key TEXT,
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            url      TEXT,
+            key      TEXT,
             currency TEXT
         )""")
+
         # platforms
         await db.execute("""
         CREATE TABLE IF NOT EXISTS platforms (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id   INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT
         )""")
+
         # categories
         await db.execute("""
         CREATE TABLE IF NOT EXISTS categories (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            name        TEXT,
             platform_id INTEGER
         )""")
+
         # services
         await db.execute("""
         CREATE TABLE IF NOT EXISTS services (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            category_id INTEGER,
-            price INTEGER,
-            min_qty INTEGER,
-            max_qty INTEGER,
-            api_id INTEGER,
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            name          TEXT,
+            category_id   INTEGER,
+            price         INTEGER,
+            min_qty       INTEGER,
+            max_qty       INTEGER,
+            api_id        INTEGER,
             api_service_id INTEGER,
-            description TEXT,
-            refill INTEGER,
-            cancel INTEGER,
-            activity INTEGER DEFAULT 1        
+            description   TEXT,
+            refill        INTEGER,
+            cancel        INTEGER,
+            activity      INTEGER DEFAULT 1
         )""")
+
         # orders
         await db.execute("""
         CREATE TABLE IF NOT EXISTS orders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            service_id INTEGER,
-            link TEXT,
-            quantity INTEGER,
-            price INTEGER,
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id     INTEGER,
+            service_id  INTEGER,
+            link        TEXT,
+            quantity    INTEGER,
+            price       INTEGER,
             api_order_id INTEGER,
-            status TEXT DEFAULT 'Pending',
-            created_at DATETIME DEFAULT (datetime('now', '+5 hours')),
+            status      TEXT DEFAULT 'Pending',
+            created_at  DATETIME DEFAULT (datetime('now', '+5 hours')),
             completed_at DATETIME DEFAULT NULL
         )""")
+
         await db.commit()
-
-
 # =======================
 # 2️⃣ User bilan bog‘liq
 # =======================
