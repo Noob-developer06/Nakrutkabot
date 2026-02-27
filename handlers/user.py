@@ -39,17 +39,17 @@ class Start(UserHandler):
                 await state.clear()
                 user_id = message.from_user.id
                 ref_id = command.args
-                
+
                 try:
                     ref_id = int(ref_id)
                 except Exception:
                     ref_id = None
-                    
+
                 await add_user(user_id, ref_id)
                 if not await is_subscribed(user_id):
                     await message.answer(msg31, reply_markup=subscribe_kb())
                     return
-                    
+
                 await message.answer(msg1, reply_markup=menu_kb(user_id))
             except Exception as e:
                 await send_error(e)
@@ -61,12 +61,12 @@ class Start(UserHandler):
                 if not await is_subscribed(callback.from_user.id):
                     await callback.answer("❌ Siz kanalga obuna bo'lmagansiz!", show_alert=True)
                     return
-                
+
                 await callback.message.delete()
                 await callback.message.answer(msg1, reply_markup=menu_kb(callback.from_user.id))
                 await give_ref_bonus(callback.from_user.id)
                 await callback.answer()
-                
+
             except Exception as e:
                 await send_error(e)
 
@@ -165,11 +165,11 @@ class HisobToldirish(UserHandler):
                 except Exception:
                     await message.answer(msg17.format(min_pay=min_pay, max_pay=max_pay))
                     return
-                    
+
                 if amount < min_pay or amount > max_pay:
                     await message.answer(msg17.format(min_pay=min_pay, max_pay=max_pay))
                     return
-                    
+
                 await state.update_data(amount=amount)
                 await message.answer(msg18)
                 await state.set_state(PayState.check)
@@ -317,7 +317,7 @@ class Xizmatlar(UserHandler):
             try:
                 await state.clear()
                 service_id = int(callback.data.split(":")[1])
-                
+
                 service_data = await get_service(service_id)
                 if not service_data:
                     await callback.answer("Xizmat topilmadi", show_alert=True)
@@ -325,7 +325,7 @@ class Xizmatlar(UserHandler):
 
                 min_qty = service_data["min_qty"]
                 max_qty = service_data["max_qty"]
-                
+
                 await state.update_data(service_id=service_id, min_qty=min_qty, max_qty=max_qty)
                 await callback.message.edit_text(msg6.format(min=min_qty, max=max_qty))
                 await state.set_state(StartOrderState.quantity)
@@ -389,7 +389,14 @@ class Xizmatlar(UserHandler):
                 data = await state.get_data()
                 service_id, price, link, quantity = data.get("service_id"), data.get("price"), data.get("link"), data.get("quantity")
 
-                if not all([service_id, price, link, quantity]):
+                if not all([service_id, link, quantity]):
+                    await callback.message.answer("❌ Xatolik. Qayta urinib ko'ring.")
+                    await state.clear()
+                    return
+                    
+                try:
+                    price = int(price)
+                except Exception:
                     await callback.message.answer("❌ Xatolik. Qayta urinib ko'ring.")
                     await state.clear()
                     return
