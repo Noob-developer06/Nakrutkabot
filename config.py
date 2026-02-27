@@ -18,7 +18,7 @@ FIO = "JON DOE"
 min_pay = 1000
 max_pay = 1000000
 
-update_status_time = 300
+update_status_time = 100
 
 payments_channel_id = -1003766126502
 support_channel_id = -1003406665330
