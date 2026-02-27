@@ -15,7 +15,7 @@ from loader import bot
 from texts.admin import text1
 from texts.user import (msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg12, msg13, msg15, msg16, msg17, msg18, msg19, msg20, msg31, msg29)
 
-from helper import send_error, is_subscribed, translate_status 
+from helper import send_error, is_subscribed, translate_status, format_time
 
 user_router = Router()
 
@@ -287,7 +287,7 @@ class Xizmatlar(UserHandler):
                 cancel = "Mavjud" if service_data["cancel"] == 1 else "Mavjud emas"
                 refill = "Mavjud" if service_data["refill"] == 1 else "Mavjud emas"
                 description = service_data["description"] or ""
-                avg_time = service_data["avg_time"] or "Yangi xizmat"
+                avg_time = format_time(service_data["avg_time"]) or "Yangi xizmat"
                 min_qty = service_data["min_qty"]
                 max_qty = service_data["max_qty"]
                 service_order_count = service_data["service_orders_count"]
