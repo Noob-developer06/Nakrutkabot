@@ -1,7 +1,8 @@
 msg1 = "<b>👋Assalomu aleykum botimizga hush kelibsiz. Kerakli menyuni tanlang!</b>"
 msg2 = "<b>🖇Quyidagilardan tarmoqlardan birini tanlang</b>"
-msg3 = "<b>🖇Quyidagi xizmatlardan birini tanlang</b>"
-msg4 = "<b>✅O'zingizga kerakli xizmatni tanlang</b>"
+msg3 = "<b>🖇Quyidagi bo'limlardan birini tanlang.</b>"
+msg4 = "<b>⏬ Quyidagi xizmatlardan birini tanlang:\n
+💰 Narxlar 1000 tasi uchun berilgan</b>"
 
 
 msg6 = """<b>🛒 Buyurtma miqdorini kiriting
