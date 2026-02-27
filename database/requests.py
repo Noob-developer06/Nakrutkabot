@@ -157,15 +157,25 @@ async def get_user(user_id: int):
         user_data["payments"] = await payments_cursor.fetchall()
         return user_data
 
-async def add_balance(user_id: int, amount: int):
-    async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute("SELECT id FROM users WHERE user_id = ?", (user_id,))
-        user = await cursor.fetchone()
-        if not user:
-            return False
-        await db.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (amount, user_id))
-        await db.commit()
+async def add_balance(user_id: int, amount: int, db=None):
+    # Agar tashqaridan db berilsa – o‘sha ishlatiladi
+    if db:
+        await db.execute(
+            "UPDATE users SET balance = balance + ? WHERE user_id = ?",
+            (amount, user_id)
+        )
         return True
+
+    # Aks holda eski ishlashini saqlaymiz
+    async with aiosqlite.connect(DB_PATH) as db2:
+        await db2.execute(
+            "UPDATE users SET balance = balance + ? WHERE user_id = ?",
+            (amount, user_id)
+        )
+        await db2.commit()
+        return True
+
+
 
 async def sub_balance(user_id: int, amount: int):
     async with aiosqlite.connect(DB_PATH) as db:
