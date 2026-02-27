@@ -48,8 +48,12 @@ def translate_status(status: str) -> str:
 
 
 
-
 def format_time(seconds):
+    if seconds is None:
+        return None
+
+    seconds = int(seconds)
+
     parts = []
     
     hours = seconds // 3600
@@ -62,6 +66,7 @@ def format_time(seconds):
     
     secs = seconds % 60
     if secs > 0 or not parts:  # agar faqat 0 sekund bo‘lsa ham chiqarish
-        parts.append(f"{secs} sekunt")
+        parts.append(f"{secs} sekund")
     
     return " ".join(parts)
+
