@@ -12,7 +12,7 @@ msg6 = """<b>🛒 Buyurtma miqdorini kiriting
 msg5 = """{service_name}
 🆔️ Xizmat ID: {service_id} ✅
 
-💶 Narx(x1000): {price}
+💶 Narx(x1000): {price} so'm
 Chegirma: {chegirma}%
 <blockquote>
 Ushbu xizmatga {service_order_count} ta buyurtma berilgan
