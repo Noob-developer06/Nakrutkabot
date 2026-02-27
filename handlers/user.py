@@ -371,7 +371,7 @@ class Xizmatlar(UserHandler):
                         link=link,
                         price=price / 100
                     ),
-                    reply_markup=send_order_kb()
+                    reply_markup=send_order_kb(), disable_web_page_preview = True
                 )
                 await state.update_data(link=link, price=price)
                 await state.set_state(StartOrderState.confirm)
@@ -488,7 +488,7 @@ class MyOrders(UserHandler):
                         order_id,
                         refill=refill,
                         cancel=cancel
-                    )
+                    ), disable_web_page_preview = True
                 )
 
                 await callback.answer()
