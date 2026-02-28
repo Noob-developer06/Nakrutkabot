@@ -31,7 +31,7 @@ async def edit_order():
                 await db.execute("UPDATE orders SET status = ? WHERE id = ?", (new_status, order_id))
                 if new_status == "Completed":
                     await db.execute("UPDATE orders SET completed_at = datetime('now', '+5 hours') WHERE id = ?", (order_id,))
-                    await bot.send_message(user_id, msg10.format(order_id=order_id, link=link, quantity=quantity))
+                    await bot.send_message(user_id, msg10.format(order_id=order_id, link=link, quantity=quantity), disable_web_page_preview=True)
                     await db.commit()
                 if new_status == "Canceled":
                     await bot.send_message(user_id, msg11.format(order_id=order_id, link=link, quantity=quantity, paid_amount=price))
