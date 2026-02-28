@@ -26,7 +26,7 @@ error_channel_id = -1003760597369
 baza_channel_id = -1003760597369
 
 channel_id = -1003757492292
-channel_username = "FastSmmProKanal"
+channel_username = "ChatSmmX"
 
 
 foiz = 1.5
