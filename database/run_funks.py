@@ -2,12 +2,11 @@ import aiosqlite
 import asyncio
 
 from api_requests import get_status
-from database.requests import get_service, get_user, add_balance
+from database.requests import add_balance  # faqat add_balance qoladi
 from helper import send_error
 from texts.user import msg10, msg11
 from loader import bot
 from config import update_status_time, DB_PATH
-
 
 
 async def edit_order():
@@ -22,11 +21,7 @@ async def edit_order():
         for order in orders:
             order_id, user_id, api_order_id, service_id, price, quantity, link, current_status = order
 
-            service = await get_service(service_id)
-            if not service:
-                continue
-
-            status_data = await get_status(service["api_id"], api_order_id)
+            status_data = await get_status(service_id, api_order_id)
             if not status_data:
                 continue
 
@@ -36,13 +31,13 @@ async def edit_order():
             if new_status == current_status:
                 continue
 
-            # DB update
+            # 🔹 Order statusni yangilash
             await db.execute(
                 "UPDATE orders SET status = ? WHERE id = ?",
                 (new_status, order_id)
             )
 
-            # Message va balance update
+            # 🔹 Message va balance update
             if new_status == "Completed":
                 await bot.send_message(
                     user_id,
@@ -51,19 +46,23 @@ async def edit_order():
                 )
 
             elif new_status == "Canceled":
-                await add_balance(user_id, price)
+                # 🔹 add_balance ni shu yerda chaqiramiz, db uzatiladi
+                await add_balance(user_id, price, db)
+
                 await bot.send_message(
                     user_id,
                     msg11.format(order_id=order_id, link=link, quantity=quantity, paid_amount=price),
                     disable_web_page_preview=True
                 )
 
+        # 🔹 Commit faqat oxirida
         await db.commit()
+
 
 async def order_updater():
     while True:
         try:
-            await edit_order()  # Siz yozgan optimizatsiyalangan funksiya
+            await edit_order()
         except Exception as e:
-            await send_error(e)  # xatolarni loglash
+            await send_error(e)
         await asyncio.sleep(update_status_time)
