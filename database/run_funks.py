@@ -11,12 +11,12 @@ from config import update_status_time, DB_PATH
 async def edit_order():
     try:
         async with aiosqlite.connect(DB_PATH) as db:
-            cursor = await db.execute("SELECT id, api_order_id, user_id, service_id, price, status, quantity FROM orders WHERE status IN ('Pending', 'Processing', 'In progress')")
+            cursor = await db.execute("SELECT id, api_order_id, user_id, service_id, price, status, quantity, link FROM orders WHERE status IN ('Pending', 'Processing', 'In progress')")
             orders = await cursor.fetchall()
             if not orders:
                 return False
             for order in orders:
-                order_id, api_order_id, user_id, service_id, price, old_status, quantity = order
+                order_id, api_order_id, user_id, service_id, price, old_status, quantity, link = order
                 cursor_service = await db.execute("SELECT api_id FROM services WHERE id = ?", (service_id,))
                 service = await cursor_service.fetchone()
                 if not service:
@@ -31,10 +31,10 @@ async def edit_order():
                 await db.execute("UPDATE orders SET status = ? WHERE id = ?", (new_status, order_id))
                 if new_status == "Completed":
                     await db.execute("UPDATE orders SET completed_at = datetime('now', '+5 hours') WHERE id = ?", (order_id,))
-                    await bot.send_message(user_id, msg10.format(order_id, price))
+                    await bot.send_message(user_id, msg10.format(order_id=order_id, link=link, quantity=quantity))
                     await db.commit()
                 if new_status == "Canceled":
-                    await bot.send_message(user_id, msg11.format(order_id, price))
+                    await bot.send_message(user_id, msg11.format(order_id, link, quantity, price))
                     await db.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (price, user_id))
                     await db.commit()
                 if new_status == "Partial":
