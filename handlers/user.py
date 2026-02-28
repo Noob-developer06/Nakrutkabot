@@ -316,6 +316,10 @@ class Xizmatlar(UserHandler):
         async def start_order(callback: CallbackQuery, state: FSMContext):
             try:
                 await state.clear()
+                try:
+                    await callback.message.delete()
+                except Exception:
+                    pass   
                 service_id = int(callback.data.split(":")[1])
 
                 service_data = await get_service(service_id)
@@ -327,7 +331,7 @@ class Xizmatlar(UserHandler):
                 max_qty = service_data["max_qty"]
 
                 await state.update_data(service_id=service_id, min_qty=min_qty, max_qty=max_qty)
-                await callback.message.edit_text(msg6.format(min=min_qty, max=max_qty), reply_markup=back())
+                await callback.message.answer(msg6.format(min=min_qty, max=max_qty), reply_markup=back())
                 await state.set_state(StartOrderState.quantity)
                 await callback.answer()
             except Exception as e:
