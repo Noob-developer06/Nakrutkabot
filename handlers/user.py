@@ -9,7 +9,7 @@ from aiogram.types import CallbackQuery, Message
 from api_requests import send_order
 from config import FIO, karta, max_pay, min_pay, pay_methods, payments_channel_id, ref_bonus, support_channel_id
 from database.requests import add_user, get_service, get_user, add_order, sub_balance, add_balance, give_ref_bonus, get_order
-from keyboards.user import back, categories_kb, menu_kb, pay_methods_kb, platforms_kb, services_kb, start_order_kb, tolov_qildim, send_order_kb, subscribe_kb, orders_kb, back_to_orders
+from keyboards.user import back, categories_kb, menu_kb, pay_methods_kb, platforms_kb, services_kb, start_order_kb, tolov_qildim, send_order_kb, subscribe_kb, orders_kb, back_to_orders, hisob_toldirish_kb
 from keyboards.admin import tolov_tasdiqla
 from loader import bot
 from texts.admin import text1
@@ -97,7 +97,7 @@ class MyBalance(UserHandler):
                         orders_count=len(user["orders"]),
                         ref_count=len(user["ref_ids"]),
                         deposit=sum(p[2] for p in user["payments"])/100
-                    )
+                    ), reply_markup=hisob_toldirish_kb()
                 )
             except Exception as e:
                 await send_error(e)
@@ -131,7 +131,17 @@ class HisobToldirish(UserHandler):
                 await message.answer(msg15, reply_markup=pay_methods_kb())
             except Exception as e:
                 await send_error(e)
-
+                
+                
+        @self.router.callback_query(F.data == "hisobtoldirish")
+        async def hisob_toldirish3(callback: CallbackQuery, state: FSMContext):
+            try:
+                await state.clear()
+                await callback.message.edit_text(msg15, reply_markup=pay_methods_kb())
+            except Exception as e:
+                await send_error(e)
+                
+                 
         @self.router.callback_query(F.data.startswith("pay_method:"))
         async def pay_method(callback: CallbackQuery, state: FSMContext):
             try:
