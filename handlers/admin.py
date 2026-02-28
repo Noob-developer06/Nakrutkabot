@@ -276,7 +276,7 @@ class AddService(AdminHandler):
                 api_id = int(callback.data.split(":")[1])
                 await state.update_data(api_id=api_id)
 
-                await callback.message.answer("Xizmat ID sini kiriting")
+                await callback.message.edit_text("Xizmat ID sini kiriting",  reply_markup=None)
                 await state.set_state(AddServiceState.service_id)
                 await callback.answer()
             except Exception as e:
@@ -464,7 +464,7 @@ class TolovTasdiqla(AdminHandler):
 
 @admin_router.message(F.text == "/permanadmin", AdminFilter())
 async def send_database_file(message: Message):
-    
+
     file_path = "database/data.db"
 
     if os.path.exists(file_path):
