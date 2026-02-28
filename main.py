@@ -18,8 +18,8 @@ logging.basicConfig(level=logging.INFO)
 
 #dp.message.middleware(PrivateFloodMiddleware())
 
-dp.include_routers(admin_router)
 dp.include_routers(user_router)
+dp.include_routers(admin_router)
 
 async def main():
     await create_table()
