@@ -151,7 +151,7 @@ class HisobToldirish(UserHandler):
         async def confirm_payment(callback: CallbackQuery, state: FSMContext):
             try:
                 await callback.message.delete()
-                await callback.message.answer(msg17.format(min_pay=min_pay, max_pay=max_pay))
+                await callback.message.answer(msg17.format(min_pay=min_pay, max_pay=max_pay), reply_markup=back())
                 await state.set_state(PayState.amount)
                 await callback.answer()
             except Exception as e:
@@ -327,7 +327,7 @@ class Xizmatlar(UserHandler):
                 max_qty = service_data["max_qty"]
 
                 await state.update_data(service_id=service_id, min_qty=min_qty, max_qty=max_qty)
-                await callback.message.edit_text(msg6.format(min=min_qty, max=max_qty))
+                await callback.message.edit_text(msg6.format(min=min_qty, max=max_qty), reply_markup=back())
                 await state.set_state(StartOrderState.quantity)
                 await callback.answer()
             except Exception as e:
