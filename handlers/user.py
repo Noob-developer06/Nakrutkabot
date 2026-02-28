@@ -15,7 +15,7 @@ from loader import bot
 from texts.admin import text1
 from texts.user import (msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg12, msg13, msg15, msg16, msg17, msg18, msg19, msg20, msg31, msg29)
 
-from helper import send_error, is_subscribed, translate_status, format_time
+from helper import send_error, is_subscribed, translate_status, format_time, check_social_link
 
 user_router = Router()
 
@@ -350,6 +350,10 @@ class Xizmatlar(UserHandler):
         @self.router.message(StartOrderState.link, F.text)
         async def link(message: Message, state: FSMContext):
             try:
+                link = message.text
+                if not check_social_link(link):
+                    await message.answer("❌ Noto‘g‘ri link!\n\nIltimos, to‘g‘ri havolani qayta yuboring.")
+                    return
                 data = await state.get_data()
                 service_id = data.get("service_id")
                 service_data = await get_service(service_id)
@@ -361,7 +365,6 @@ class Xizmatlar(UserHandler):
                 quantity = data.get("quantity")
                 price = int(service_data["price"] * quantity / 1000)
                 name = service_data["name"]
-                link = message.text
 
                 await message.answer(
                     msg8.format(
@@ -393,7 +396,7 @@ class Xizmatlar(UserHandler):
                     await callback.message.answer("❌ Xatolik. Qayta urinib ko'ring.")
                     await state.clear()
                     return
-                    
+
                 try:
                     price = int(price)
                 except Exception:
