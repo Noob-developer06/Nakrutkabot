@@ -142,25 +142,27 @@ async def get_user(user_id: int):
         user_data["payments"] = await payments_cursor.fetchall()
         return user_data
 
-async def add_balance(user_id: int, amount: int, db=None):
-    if db is None:
-        async with aiosqlite.connect(DB_PATH, timeout=30) as db:
-            return await add_balance(user_id, amount, db)
 
-    cursor = await db.execute(
-        "SELECT id FROM users WHERE user_id = ?",
-        (user_id,)
-    )
-    user = await cursor.fetchone()
-    if not user:
-        return False
+async def add_balance(user_id: int, amount: int):
+    async with aiosqlite.connect(DB_PATH) as db:
+        # Foydalanuvchini tekshirish
+        cursor = await db.execute(
+            "SELECT id FROM users WHERE user_id = ?",
+            (user_id,)
+        )
+        user = await cursor.fetchone()
+        if not user:
+            return False
 
-    await db.execute(
-        "UPDATE users SET balance = balance + ? WHERE user_id = ?",
-        (amount, user_id)
-    )
+        # Balansni yangilash
+        await db.execute(
+            "UPDATE users SET balance = balance + ? WHERE user_id = ?",
+            (amount, user_id)
+        )
+        await db.commit()  # O‘zgartirishlarni saqlash
 
-    return True
+        return True
+
 
 async def sub_balance(user_id: int, amount: int):
     async with aiosqlite.connect(DB_PATH) as db:
@@ -313,55 +315,63 @@ async def get_services(category_id: int):
         """, (category_id,))
         return await cursor.fetchall()
 
-import aiosqlite
-from config import DB_PATH
 
-async def get_service(service_id: int, db=None):
-    if db is None:
-        async with aiosqlite.connect(DB_PATH) as db:
-            return await get_service(service_id, db)
 
-    # Service ma'lumotini olish
-    cursor = await db.execute("SELECT * FROM services WHERE id = ?", (service_id,))
-    service = await cursor.fetchone()
-    if not service:
-        return None
+async def get_service(service_id: int):
+    async with aiosqlite.connect(DB_PATH) as db:
 
-    data = {
-        "id": service[0],
-        "name": service[1],
-        "category_id": service[2],
-        "price": service[3],
-        "min_qty": service[4],
-        "max_qty": service[5],
-        "api_id": service[6],
-        "api_service_id": service[7],
-        "description": service[8],
-        "refill": service[9],
-        "cancel": service[10],
-        "activity": service[11]
-    }
+        # Service ma'lumotini olish
+        cursor = await db.execute(
+            "SELECT * FROM services WHERE id = ?",
+            (service_id,)
+        )
+        service = await cursor.fetchone()
+        if not service:
+            return None
 
-    # Avg time orders orqali
-    avg_cursor = await db.execute("""
-        SELECT AVG(strftime('%s', completed_at) - strftime('%s', created_at)) 
-        FROM orders 
-        WHERE service_id = ? AND status = 'Completed'
-    """, (service_id,))
-    avg_time = await avg_cursor.fetchone()
-    data["avg_time"] = int(avg_time[0]) if avg_time and avg_time[0] else None
+        data = {
+            "id": service[0],
+            "name": service[1],
+            "category_id": service[2],
+            "price": service[3],
+            "min_qty": service[4],
+            "max_qty": service[5],
+            "api_id": service[6],
+            "api_service_id": service[7],
+            "description": service[8],
+            "refill": service[9],
+            "cancel": service[10],
+            "activity": service[11]
+        }
 
-    # Category orqali platform_id olish
-    p_cursor = await db.execute("SELECT platform_id FROM categories WHERE id = ?", (service[2],))
-    platform = await p_cursor.fetchone()
-    data["platform_id"] = platform[0] if platform else None
+        # Avg time orders orqali
+        avg_cursor = await db.execute("""
+            SELECT AVG(strftime('%s', completed_at) - strftime('%s', created_at)) 
+            FROM orders 
+            WHERE service_id = ? AND status = 'Completed'
+        """, (service_id,))
+        avg_time = await avg_cursor.fetchone()
+        data["avg_time"] = int(avg_time[0]) if avg_time and avg_time[0] else None
 
-    # Service orders count
-    orders_cursor = await db.execute("SELECT COUNT(*) FROM orders WHERE service_id = ?", (service_id,))
-    orders_count = await orders_cursor.fetchone()
-    data["service_orders_count"] = orders_count[0] if orders_count else 0
+        # Category orqali platform_id olish
+        p_cursor = await db.execute(
+            "SELECT platform_id FROM categories WHERE id = ?",
+            (service[2],)
+        )
+        platform = await p_cursor.fetchone()
+        data["platform_id"] = platform[0] if platform else None
 
-    return data
+        # Service orders count
+        orders_cursor = await db.execute(
+            "SELECT COUNT(*) FROM orders WHERE service_id = ?",
+            (service_id,)
+        )
+        orders_count = await orders_cursor.fetchone()
+        data["service_orders_count"] = orders_count[0] if orders_count else 0
+
+        return data
+
+
 
 async def edit_service(service_id: int, **kwargs):
     async with aiosqlite.connect(DB_PATH) as db:
