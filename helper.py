@@ -1,8 +1,10 @@
-#helper.py 
+#helper.py
+
 
 from urllib.parse import urlparse
 
 import sys
+import re
 import traceback
 from loader import bot
 from config import error_channel_id, channel_id
@@ -69,4 +71,19 @@ def format_time(seconds):
         parts.append(f"{secs} sekund")
     
     return " ".join(parts)
+
+
+
+
+SOCIAL_PATTERNS = (
+    r"^(https?://)?(t\.me|telegram\.me)/.+",
+    r"^(https?://)?(www\.)?instagram\.com/.+",
+    r"^(https?://)?(www\.)?(youtube\.com|youtu\.be)/.+",
+    r"^(https?://)?(www\.)?tiktok\.com/.+",
+)
+
+
+def check_social_link(link: str) -> bool:
+    link = link.lower().strip()
+    return any(re.match(pattern, link) for pattern in SOCIAL_PATTERNS)
 
