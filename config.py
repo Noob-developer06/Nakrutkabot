@@ -12,13 +12,13 @@ ADMIN = 8483511103
 
 ref_bonus = 100
 
-karta = 8000123456789012
-FIO = "JON DOE"
+karta = "9860350148113086"
+FIO = "Perman Shamuratov"
 
 min_pay = 1000
 max_pay = 1000000
 
-update_status_time = 100
+update_status_time = 10
 
 payments_channel_id = -1003766126502
 support_channel_id = -1003406665330
