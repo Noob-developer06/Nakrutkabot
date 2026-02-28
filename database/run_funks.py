@@ -46,19 +46,21 @@ async def edit_order():
                 if new_status == "Canceled":
                     paid_amount = price or 0
                     await bot.send_message(user_id, msg11.format(order_id=order_id, link=link, quantity=quantity, paid_amount=paid_amount))
-                    await db.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (price, user_id))
+                    if paid_amount != 0:
+                        await db.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (price, user_id))
 
                 if new_status == "Partial":
                     remains = status.get("remains", 0)
                     return_price = price * 100 * remains / quantity
-                    await db.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (return_price, user_id))
+                    if return_price != 0:
+                        await db.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (return_price, user_id))
 
             await db.commit()
             return True
 
     except Exception as e:
         await send_error(e)
-                
+
 
 
 async def order_updater():
