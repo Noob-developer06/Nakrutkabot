@@ -177,4 +177,8 @@ def back_to_orders(order_id, refill=False, cancel=False):
 
     builder.adjust(2, 1)
     return builder.as_markup()
-     
+
+def hisob_toldirish_kb():
+    builder = InlineKeyboardBuilder()
+    builder.add(InlineKeyboardButton(text="💰Hisob toʻldirish", callback_data="hisobtoldirish"))
+    return builder.as_markup()
