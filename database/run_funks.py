@@ -34,7 +34,7 @@ async def edit_order():
                     await bot.send_message(user_id, msg10.format(order_id=order_id, link=link, quantity=quantity))
                     await db.commit()
                 if new_status == "Canceled":
-                    await bot.send_message(user_id, msg11.format(order_id=order_id, link=link, quantity=quantity, price=price))
+                    await bot.send_message(user_id, msg11.format(order_id=order_id, link=link, quantity=quantity, paid_amount=price))
                     await db.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (price, user_id))
                     await db.commit()
                 if new_status == "Partial":
