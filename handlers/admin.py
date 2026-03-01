@@ -10,19 +10,18 @@ import os
 
 from database.requests import (
     add_platform, add_category, get_apis,
-    get_api, add_service, add_payment, add_api, edit_service
-)
+    get_api, add_service, add_payment, add_api, edit_service, get_user, add_balance, sub_balance)
 from api_requests import get_api_service, get_balance
 from keyboards.user import back
 from keyboards.admin import (
     apis_kb, admin_panel_kb,
     add_service_apis_kb, edit_api_kb,
-    back_admin_panel_kb, update_service_kb
+    back_admin_panel_kb, update_service_kb, user_control_kb
 )
 from helper import get_domain, send_error
 from filters import AdminFilter
 from loader import bot
-from texts.admin import text2, text3, text4, text5, text6
+from texts.admin import text2, text3, text4, text5, text6, text7
 from config import CURRENCY_RATE, foiz, baza_channel_id
 
 
@@ -458,6 +457,114 @@ class TolovTasdiqla(AdminHandler):
                 await send_error(e)
 
 
+#===========================
+# Foydalanuvchini boshqaris
+#===========================
+class UserControlState(StatesGroup):
+    user_id = State()
+class UserEditBalanseState(StatesGroup):
+    add_amount = State()
+    sub_amount = State()
+
+
+class UserControl(AdminHandler):
+    def register_handlers(self):
+        @self.router.message(F.text == "🧑‍💻 Foydalanuvchini boshqarish", AdminFilter())
+        async def admin_user_control(message: Message, state: FSMContext):
+            try:
+                await state.clear()
+                await message.answer("<b>🆔 Foydalanuvchining ID raqamini yuboring:</b>")
+                await state.set_state(UserControlState.user_id)
+            except Exception as e:
+                await send_error(e)
+
+        @self.router.message(UserControlState.user_id)
+        async def user_control(message: Message, state: FSMContext):
+            try:
+                try:
+                    user_id = int(message.text)
+                except ValueError:
+                    await message.answer("❌ Foydalanuvchi ID raqamini raqamda kiriting!")
+                    return
+                user = await get_user(user_id)
+                if not user:
+                    await message.answer("❌ Bunday foydalanuvchi topilmadi!")
+                    return
+                #============================
+                balance = user["balance"]/100
+                orders_count = len(user["orders"])
+                ref_count = len(user["ref_ids"])
+                deposit = sum(p[2] for p in user["payments"])/100
+
+                kb = await user_control_kb(user_id)
+                #============================
+                await message.answer(text7.format(
+                    user_id=user_id,
+                    balance=balance,
+                    orders_count=orders_count,
+                    ref_count=ref_count,
+                    deposit=deposit
+                ), reply_markup=kb)
+                await state.clear()
+            except Exception as e:
+                await send_error(e)
+
+        @self.router.callback_query(F.data.startswith("add_user_balance:"))
+        async def add_user_balance(callback: CallbackQuery, state: FSMContext):
+            try:
+                await state.clear()
+                user_id = int(callback.data.split(":")[1])
+                await callback.message.edit_text("<b>💰 Qo'shmoqchi bo'lgan summani kiriting:</b>")
+                await state.update_data(user_id=user_id)
+                await state.set_state(UserEditBalanseState.add_amount)
+                await callback.answer()
+            except Exception as e:
+                await send_error(e)
+
+        @self.router.message(UserEditBalanseState.add_amount)
+        async def add_user_balance_amount(message: Message, state: FSMContext):
+            try:
+                try:
+                    amount = int(message.text)
+                except ValueError:
+                    await message.answer("❌ Summani raqamda kiriting!")
+                    return
+                data = await state.get_data()
+                user_id = data.get("user_id")
+                await add_balance(user_id, amount*100)
+                await message.answer(f"✅ {amount} so'm foydalanuvchiga qo'shildi!")
+                await state.clear()
+            except Exception as e:
+                await send_error(e)
+
+        @self.router.callback_query(F.data.startswith("sub_user_balance:"))
+        async def sub_user_balance(callback: CallbackQuery, state: FSMContext):
+            try:
+                await state.clear()
+                user_id = int(callback.data.split(":")[1])
+                await callback.message.edit_text("<b>💰 Ayirmoqchi bo'lgan summani kiriting:</b>")
+                await state.update_data(user_id=user_id)
+                await state.set_state(UserEditBalanseState.sub_amount)
+                await callback.answer()
+            except Exception as e:
+                await send_error(e)
+
+        @self.router.message(UserEditBalanseState.sub_amount)
+        async def sub_user_balance_amount(message: Message, state: FSMContext):
+            try:
+                try:
+                    amount = int(message.text)
+                except ValueError:
+                    await message.answer("❌ Summani raqamda kiriting!")
+                    return
+                data = await state.get_data()
+                user_id = data.get("user_id")
+                await sub_balance(user_id, amount*100)
+                await message.answer(f"✅ {amount} so'm foydalanuvchidan ayirildi!")
+                await state.clear()
+            except Exception as e:
+                await send_error(e)
+
 
 
 #===========================
@@ -477,9 +584,9 @@ async def send_database_file(message: Message):
         await message.answer("⚠️ Fayl topilmadi: data.db")
 
 
-
-Api(admin_router)
 AdminPanel(admin_router)
+Api(admin_router)
 AddService(admin_router)
 TolovTasdiqla(admin_router)
+UserControl(admin_router)
 UpdateService(admin_router)
