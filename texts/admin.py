@@ -26,3 +26,11 @@ text4 = """<b>❌ {amount} so‘m to‘lovingiz bekor qilindi.\nIltimos, qayta t
 text5 = """<b>✅ {amount} so‘m to‘lovingiz tasdiqlandi.\nXizmatdan foydalanishingiz mumkin 😊</b>"""
 
 text6 = """<b>⚙️ {domain} - {balance}  {currency} \n\n🔗 Havola: {url} \n🔑 Kalit:</b> <code>{key}</code>"""
+
+text7 = """<b>✅ Foydalanuvchi topildi!
+
+🆔 ID raqami: {user_id}
+💵 Balansi: {balance} so'm 
+📊 Buyurtmalari: {orders_count} ta
+🗣 Referallari: {ref_count} ta
+💰 Kiritgan pullar: {deposit} so'm</b>"""
