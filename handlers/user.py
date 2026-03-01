@@ -131,8 +131,8 @@ class HisobToldirish(UserHandler):
                 await message.answer(msg15, reply_markup=pay_methods_kb())
             except Exception as e:
                 await send_error(e)
-                
-                
+
+
         @self.router.callback_query(F.data == "hisobtoldirish")
         async def hisob_toldirish3(callback: CallbackQuery, state: FSMContext):
             try:
@@ -140,8 +140,8 @@ class HisobToldirish(UserHandler):
                 await callback.message.edit_text(msg15, reply_markup=pay_methods_kb())
             except Exception as e:
                 await send_error(e)
-                
-                 
+
+
         @self.router.callback_query(F.data.startswith("pay_method:"))
         async def pay_method(callback: CallbackQuery, state: FSMContext):
             try:
@@ -554,9 +554,21 @@ class MyOrders(UserHandler):
             except Exception as e:
                 await send_error(e)
 
-
+#=================================================================================================================================
+# 📚 Qo'llanmalar
+#=================================================================================================================================
+class Qollanmalar(UserHandler):
+    def register_handlers(self):
+        @self.router.message(F.text == "📚 Qo'llanmalar")
+        async def qollanmalar(message: Message, state: FSMContext):
+            try:
+                await state.clear()
+                await message.answer("⚠️ Qo'llanmalar mavjud emas.")
+            except Exception as e:
+                await send_error(e)
 
 Start(user_router)
+Qollanmalar(user_router)
 MyBalance(user_router)
 PulIshlash(user_router)
 HisobToldirish(user_router)
