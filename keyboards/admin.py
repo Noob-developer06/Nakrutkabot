@@ -3,7 +3,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 from aiogram.types import InlineKeyboardButton, KeyboardButton
 
 
-from database.requests import get_apis
+from database.requests import get_apis, get_user
 
 def admin_panel_kb():
     builder = ReplyKeyboardBuilder()
@@ -73,3 +73,16 @@ def update_service_kb(service_id):
      builder.adjust(2)
      return builder.as_markup()
 
+async def user_control_kb(user_id: int):
+     builder = InlineKeyboardBuilder()
+     user = await get_user(user_id)
+     if user["banned"]:
+          btn_msg = "🔕 Bandan chiqarish"
+     else:
+          btn_msg = "🔔 Banlash"
+     builder.add(InlineKeyboardButton(text=btn_msg, callback_data=f"edit_user_ban:{user_id}"))
+     builder.add(InlineKeyboardButton(text="➕ Pul qo'shish", callback_data=f"add_user_balance:{user_id}"))
+     builder.add(InlineKeyboardButton(text="➖ Pul ayirish", callback_data=f"sub_user_balance:{user_id}"))
+     builder.adjust(1, 2)
+     return builder.as_markup()
+     
