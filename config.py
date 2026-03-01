@@ -8,7 +8,7 @@ TOKEN = os.getenv("BOT_TOKEN")
 
 DB_PATH = "database/data.db"
 
-ADMIN = 8483511103
+ADMIN = 6870313968
 
 ref_bonus = 100
 
@@ -21,9 +21,9 @@ max_pay = 1000000
 update_status_time = 10
 
 payments_channel_id = -1003766126502
-support_channel_id = -1003406665330
-error_channel_id = -1003760597369
-baza_channel_id = -1003760597369
+support_channel_id = -1003700981785
+error_channel_id = -1003758049023
+baza_channel_id = -1003521269518
 
 channel_id = -1003757492292
 channel_username = "ChatSmmX"
