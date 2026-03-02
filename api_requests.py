@@ -4,10 +4,6 @@ import aiohttp
 import json
 
 from database.requests import get_api
-#test
-from config import ADMIN
-from loader import bot
-#======
 
 async def smm_requests(api_id=None, action=None, url=None, key=None, **kwargs):
     # Agar api_id berilgan bo‘lsa bazadan oladi
@@ -15,9 +11,6 @@ async def smm_requests(api_id=None, action=None, url=None, key=None, **kwargs):
         api = await get_api(api_id)
         api_url = api[1]
         api_key = api[2]
-        # test
-        await bot.send_message(ADMIN, f"1. {api_url} - {api_key}")
-        #========
     else:
         api_url = url
         api_key = key
