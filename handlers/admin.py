@@ -1,4 +1,3 @@
-
 #handlers admin.py
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
@@ -64,9 +63,10 @@ class Api(AdminHandler):
         try:
             apis = await get_apis()
             msg = f"🔑 API'lar ro'yhati: {len(apis)}\n\n"
-
+            
             for api in apis:
                 api_balance = await get_balance(api_id=api[0])
+                print(api_balance)
                 balance = api_balance.get("balance", "N/A")
                 currency = api_balance.get("currency", "N/A")
                 msg += f"{api[0]}. {get_domain(api[1])} - {balance} {currency}\n"
