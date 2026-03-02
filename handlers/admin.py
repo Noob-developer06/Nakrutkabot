@@ -21,7 +21,7 @@ from helper import get_domain, send_error
 from filters import AdminFilter
 from loader import bot
 from texts.admin import text2, text3, text4, text5, text6, text7
-from config import CURRENCY_RATE, foiz, baza_channel_id
+from config import CURRENCY_RATE, foiz, baza_channel_id, ADMIN
 
 
 admin_router = Router()
@@ -66,7 +66,7 @@ class Api(AdminHandler):
             
             for api in apis:
                 api_balance = await get_balance(api_id=api[0])
-                print(str(api_balance))
+                await bot.send_message(ADMIN, str(api_balance))
                 balance = api_balance.get("balance", "N/A")
                 currency = api_balance.get("currency", "N/A")
                 msg += f"{api[0]}. {get_domain(api[1])} - {balance} {currency}\n"
