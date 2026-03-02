@@ -66,6 +66,7 @@ class Api(AdminHandler):
             
             for api in apis:
                 api_balance = await get_balance(api_id=api[0])
+                print(str(api_balance))
                 balance = api_balance.get("balance", "N/A")
                 currency = api_balance.get("currency", "N/A")
                 msg += f"{api[0]}. {get_domain(api[1])} - {balance} {currency}\n"
