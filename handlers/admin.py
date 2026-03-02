@@ -9,7 +9,7 @@ import os
 
 from database.requests import (
     add_platform, add_category, get_apis,
-    get_api, add_service, add_payment, add_api, edit_service, get_user, add_balance, sub_balance)
+    get_api, add_service, add_payment, add_api, edit_service, get_user, add_balance, sub_balance, del_service)
 from api_requests import get_api_service, get_balance
 from keyboards.user import back
 from keyboards.admin import (
@@ -63,7 +63,7 @@ class Api(AdminHandler):
         try:
             apis = await get_apis()
             msg = f"🔑 API'lar ro'yhati: {len(apis)}\n\n"
-            
+
             for api in apis:
                 api_balance = await get_balance(api_id=api[0])
                 balance = api_balance.get("balance", "N/A")
@@ -411,6 +411,20 @@ class UpdateService(AdminHandler):
 
             except Exception as e:
                 await send_error(e)
+
+        # =========================
+        #delete service
+        @self.router.callback_query(F.data.startswith("delete_service:"))
+        async def delete_service(callback: CallbackQuery, state: FSMContext):
+            try:
+                await state.clear()
+                service_id = int(callback.data.split(":")[1])
+                await del_service(service_id, True)
+                await callback.message.edit_text("✅ Xizmat faolsizlashtirildi!")
+                await callback.answer()
+            except Exception as e:
+                await send_error(e)
+                
 
 
 
