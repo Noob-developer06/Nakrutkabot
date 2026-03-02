@@ -351,7 +351,11 @@ class Xizmatlar(UserHandler):
         async def quantity(message: Message, state: FSMContext):
             try:
                 data = await state.get_data()
-                qty = int(message.text)
+                try:
+                    qty = int(message.text)
+                except ValueError:
+                    await message.answer("Iltimos,  faqat raqam kiriting!")
+                    return  
                 if qty < data.get("min_qty") or qty > data.get("max_qty"):
                     await message.answer(msg6.format(min=data.get("min_qty"), max=data.get("max_qty")))
                     return
