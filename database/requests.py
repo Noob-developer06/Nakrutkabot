@@ -118,6 +118,12 @@ async def add_user(user_id: int, ref_from_id: int = None):
         return True
 
 
+# get users id list
+async def get_users_ids():
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute("SELECT user_id FROM users") as cursor:
+            rows = await cursor.fetchall()
+            return [row[0] for row in rows]
 
 
 async def get_user(user_id: int):
