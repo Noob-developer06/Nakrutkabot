@@ -75,15 +75,15 @@ def format_time(seconds):
 
 
 
+
 SOCIAL_PATTERNS = (
+    r"^@[a-z0-9_]{3,}$",  # @username
     r"^(https?://)?(t\.me|telegram\.me)/.+",
     r"^(https?://)?(www\.)?instagram\.com/.+",
     r"^(https?://)?(www\.)?(youtube\.com|youtu\.be)/.+",
     r"^(https?://)?(www\.)?tiktok\.com/.+",
 )
 
-
 def check_social_link(link: str) -> bool:
     link = link.lower().strip()
     return any(re.match(pattern, link) for pattern in SOCIAL_PATTERNS)
-
