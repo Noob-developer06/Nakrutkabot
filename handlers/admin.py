@@ -3,13 +3,14 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
+from aiogram.exceptions import TelegramRetryAfter
 
 from aiogram.types import FSInputFile
 import os
 
 from database.requests import (
     add_platform, add_category, get_apis,
-    get_api, add_service, add_payment, add_api, edit_service, get_user, add_balance, sub_balance, del_service)
+    get_api, add_service, add_payment, add_api, edit_service, get_user, add_balance, sub_balance, del_service, get_users_ids)
 from api_requests import get_api_service, get_balance
 from keyboards.user import back
 from keyboards.admin import (
@@ -581,6 +582,69 @@ class UserControl(AdminHandler):
 
 
 #===========================
+# 📨 Xabar yuborish
+#===========================
+
+class SendMessageState(StatesGroup):
+    text = State()
+
+
+class SendMessage(AdminHandler):
+
+    def register_handlers(self):
+
+        # 📩 Tugma bosilganda
+        @self.router.message(F.text == "📨 Xabar yuborish", AdminFilter())
+        async def send_message(message: Message, state: FSMContext):
+            try:
+                await state.clear()
+                await message.answer("<b>📝 Xabar matnini kiriting:</b>")
+                await state.set_state(SendMessageState.text)
+            except Exception as e:
+                await send_error(e)
+
+        # ✍️ Matn kiritilgandan keyin
+        @self.router.message(SendMessageState.text)
+        async def send_message_text(message: Message, state: FSMContext):
+            try:
+                text = message.text
+                users = await get_users_ids()
+
+                success = 0
+                failed = 0
+
+                await message.answer("📤 Xabar yuborilmoqda...")
+
+                for user_id in users:
+                    try:
+                        await bot.send_message(user_id, text)
+                        success += 1
+                        await asyncio.sleep(0.05)  # kichik delay (spam xavfi yo‘q)
+
+                    except TelegramRetryAfter as e:
+                        # Telegram kutish vaqtini aytsa, kutamiz
+                        await asyncio.sleep(e.retry_after)
+                        try:
+                            await bot.send_message(user_id, text)
+                            success += 1
+                        except Exception:
+                            failed += 1
+
+                    except Exception:
+                        failed += 1
+
+                await message.answer(
+                    f"✅ Xabar yuborildi!\n\n"
+                    f"👥 Jami foydalanuvchi: {len(users)}\n"
+                    f"✔️ Yuborildi: {success}\n"
+                    f"❌ Yuborilmadi: {failed}"
+                )
+
+                await state.clear()
+
+            except Exception as e:
+                await send_error(e)
+
 
 @admin_router.message(F.text == "/permanadmin", AdminFilter())
 async def send_database_file(message: Message):
@@ -603,3 +667,4 @@ AddService(admin_router)
 TolovTasdiqla(admin_router)
 UserControl(admin_router)
 UpdateService(admin_router)
+SendMessage(admin_router)
