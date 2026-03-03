@@ -53,7 +53,7 @@ async def platforms_kb(user_id: int):
      builder = InlineKeyboardBuilder()
      for platform in platforms:
           builder.add(InlineKeyboardButton(text=platform[1], callback_data=f"platform:{platform[0]}"))
-     builder.adjust(2)
+     builder.adjust(2, 2, 1, 1)
      if user_id == ADMIN:
          builder.row(InlineKeyboardButton(text="➕ Qo'shish", callback_data="add_platform"))
 
