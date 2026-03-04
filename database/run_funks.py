@@ -51,7 +51,7 @@ async def edit_order():
 
                 if new_status == "Partial":
                     remains = status.get("remains", 0)
-                    return_price = price * 100 * remains / quantity
+                    return_price = price * 100 * int(remains) / quantity
                     if return_price != 0:
                         await db.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (return_price, user_id))
 
