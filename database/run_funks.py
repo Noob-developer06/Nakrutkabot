@@ -12,29 +12,30 @@ async def edit_order():
     try:
         async with aiosqlite.connect(DB_PATH) as db:
             cursor = await db.execute(
-                "SELECT id, api_order_id, user_id, service_id, price, status, quantity, link FROM orders "
-                "WHERE status IN ('Pending', 'Processing', 'In progress')"
+                """
+                SELECT id, api_order_id, user_id, service_id, price, status, quantity, link 
+                FROM orders 
+                WHERE status IN ('Pending', 'Processing', 'In progress')
+                """
             )
             orders = await cursor.fetchall()
             await cursor.close()
 
             if not orders:
-                await bot.send_message(ADMIN, "edit_order: Hech qanday faol buyurtma topilmadi (Pending/Processing/In progress)")
                 return False
 
-            await bot.send_message(ADMIN, f"edit_order: {len(orders)} ta faol buyurtma topildi")
+            # Faqat muhim holatlarda admin'ga xabar yuborishni kamaytirdik
+            # await bot.send_message(ADMIN, f"edit_order: {len(orders)} ta faol buyurtma topildi")
 
             for order in orders:
                 order_id, api_order_id, user_id, service_id, price, old_status, quantity, link = order
 
-                await bot.send_message(ADMIN, f"Buyurtma #{order_id} | old_status: {old_status} | price tip: {type(price)} | quantity tip: {type(quantity)}")
-
-                # Tip konvertatsiyasi
+                # Tip konvertatsiyasi – eng muhim qism
                 try:
-                    price_f = float(price)
-                    quantity_i = int(quantity)
-                except (TypeError, ValueError) as ex:
-                    await bot.send_message(ADMIN, f"#{order_id} TIP XATOSI: {ex}\nprice={price!r}\nquantity={quantity!r}")
+                    price_f = float(price or 0)
+                    quantity_i = int(float(quantity or 0))  # string yoki float bo'lsa ham ishlaydi
+                except (TypeError, ValueError):
+                    # await bot.send_message(ADMIN, f"#{order_id} TIP XATOSI: price={price!r}, quantity={quantity!r}")
                     continue
 
                 cursor_service = await db.execute(
@@ -45,24 +46,16 @@ async def edit_order():
                 await cursor_service.close()
 
                 if not service:
-                    await bot.send_message(ADMIN, f"#{order_id} xizmati topilmadi (service_id={service_id})")
                     continue
 
                 api_id = service[0]
 
                 status_data = await get_status(api_id, api_order_id)
                 if not status_data or "error" in status_data:
-                    await bot.send_message(ADMIN, f"#{order_id} API xatosi: {status_data}")
                     continue
 
                 new_status = status_data.get("status")
-                if not new_status:
-                    await bot.send_message(ADMIN, f"#{order_id} status bo'sh keldi: {status_data}")
-                    continue
-
-                await bot.send_message(ADMIN, f"#{order_id} → old: {old_status} | new: {new_status!r}")
-
-                if new_status == old_status:
+                if not new_status or new_status == old_status:
                     continue
 
                 # Statusni yangilash
@@ -71,29 +64,37 @@ async def edit_order():
                     (new_status, order_id)
                 )
 
-                if new_status == "Completed":
+                new_status_lower = new_status.lower()
+
+                if new_status_lower == "completed":
                     await db.execute(
                         "UPDATE orders SET completed_at = datetime('now', '+5 hours') WHERE id = ?",
                         (order_id,)
                     )
-                    await bot.send_message(
-                        user_id,
-                        msg10.format(order_id=order_id, link=link, quantity=quantity_i),
-                        disable_web_page_preview=True
-                    )
+                    try:
+                        await bot.send_message(
+                            user_id,
+                            msg10.format(order_id=order_id, link=link, quantity=quantity_i),
+                            disable_web_page_preview=True
+                        )
+                    except:
+                        pass  # foydalanuvchi bloklagan bo'lishi mumkin
 
-                elif new_status == "Canceled":
+                elif new_status_lower in ("canceled", "cancelled"):
                     paid_amount = int(price_f)
 
-                    await bot.send_message(
-                        user_id,
-                        msg11.format(
-                            order_id=order_id,
-                            link=link,
-                            quantity=quantity_i,
-                            paid_amount=paid_amount
+                    try:
+                        await bot.send_message(
+                            user_id,
+                            msg11.format(
+                                order_id=order_id,
+                                link=link,
+                                quantity=quantity_i,
+                                paid_amount=paid_amount
+                            )
                         )
-                    )
+                    except:
+                        pass
 
                     if paid_amount > 0:
                         await db.execute(
@@ -101,37 +102,39 @@ async def edit_order():
                             (paid_amount, user_id)
                         )
 
-                elif new_status.lower() in ("partial", "partially"):  # case-insensitive + turli variantlar
-                    await bot.send_message(ADMIN, f"PARTIAL (yoki shunga o'xshash) holatga kirdi → #{order_id}")
-
+                elif "partial" in new_status_lower:
+                    # Partial holati (turli yozilishlar uchun)
                     remains_raw = status_data.get("remains", "0")
                     try:
                         remains = int(remains_raw)
-                    except Exception as ex:
-                        await bot.send_message(ADMIN, f"#{order_id} remains konvert xatosi: {ex} | raw={remains_raw!r}")
+                    except:
                         remains = 0
-
-                    await bot.send_message(ADMIN, f"#{order_id} remains tipi: {type(remains)}, qiymati: {remains}")
 
                     if quantity_i > 0 and remains > 0:
                         try:
-                            return_price = int(price_f * 100 * remains / quantity_i)
-                            await bot.send_message(ADMIN, f"#{order_id} qaytariladigan summa: {return_price}")
-
-                            if return_price > 0:
+                            refund = int(price_f * 100 * remains / quantity_i)
+                            if refund > 0:
                                 await db.execute(
                                     "UPDATE users SET balance = balance + ? WHERE user_id = ?",
-                                    (return_price, user_id)
+                                    (refund, user_id)
                                 )
-                        except Exception as calc_ex:
-                            await bot.send_message(ADMIN, f"#{order_id} hisoblash xatosi: {calc_ex}")
+                                # Faqat muhim holatda admin'ga xabar
+                                # await bot.send_message(ADMIN, f"Partial refund #{order_id}: {refund}")
+                        except Exception as calc_error:
+                            await send_error(calc_error)
+                            # await bot.send_message(ADMIN, f"#{order_id} partial hisob xatosi")
 
             await db.commit()
             return True
 
     except Exception as e:
         await send_error(e)
-        await bot.send_message(ADMIN, f"edit_order umumiy xato: {type(e).__name__} → {str(e)}")
+        try:
+            # Xavfsiz xabar – < > belgilarini almashtirish orqali parse xatosini oldini olish
+            safe_msg = f"edit_order umumiy xato: {type(e).__name__} → {str(e).replace('<','<').replace('>','>')}"
+            await bot.send_message(ADMIN, safe_msg)
+        except:
+            pass  # agar telegram ham xato bersa, jim bo'lamiz
         return False
 
 
@@ -141,6 +144,5 @@ async def order_updater():
             await edit_order()
         except Exception as e:
             await send_error(e)
-            # agar xohlasangiz shu yerga ham admin habar qo'shsa bo'ladi
 
         await asyncio.sleep(update_status_time)
