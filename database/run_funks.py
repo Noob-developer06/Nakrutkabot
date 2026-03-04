@@ -5,7 +5,7 @@ from api_requests import get_status
 from helper import send_error
 from texts.user import msg10, msg11
 from loader import bot
-from config import update_status_time, DB_PATH
+from config import update_status_time, DB_PATH, ADMIN
 
 
 async def edit_order():
@@ -26,7 +26,7 @@ async def edit_order():
 
                 # Eng muhim o'zgartirish — bu yerda tipni majburan to'g'rilash
                 try:
-                    price = int(price)
+                    price = float(price)
                     quantity = int(quantity)
                 except (TypeError, ValueError):
                     # Agar tipni o'zgartirib bo'lmasa → bu buyurtmani o'tkazib yuboramiz
@@ -89,6 +89,7 @@ async def edit_order():
 
                 if new_status == "Partial":
                     remains = int(status.get("remains", 0))
+                    await bot.send_message(ADMIN, str(type(remains)))
 
                     if quantity > 0 and remains > 0:
                         # price allaqachon float bo'lgani uchun hisob-kitob to'g'ri bo'ladi
