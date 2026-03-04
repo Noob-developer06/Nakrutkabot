@@ -5,7 +5,7 @@ from api_requests import get_status
 from helper import send_error
 from texts.user import msg10, msg11
 from loader import bot
-from config import update_status_time, DB_PATH
+from config import update_status_time, DB_PATH, ADMIN
 
 
 async def edit_order():
@@ -51,7 +51,9 @@ async def edit_order():
 
                 if new_status == "Partial":
                     remains = status.get("remains", 0)
+                    await bot.send_message(ADMIN, str(remains))
                     return_price = price * 100 * int(remains) / quantity
+                    await bot.send_message(ADMIN, str(return_price))
                     if return_price != 0:
                         await db.execute("UPDATE users SET balance = balance + ? WHERE user_id = ?", (return_price, user_id))
 
