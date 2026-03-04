@@ -24,6 +24,14 @@ async def edit_order():
             for order in orders:
                 order_id, api_order_id, user_id, service_id, price, old_status, quantity, link = order
 
+                # Eng muhim o'zgartirish — bu yerda tipni majburan to'g'rilash
+                try:
+                    price = int(price)
+                    quantity = int(quantity)
+                except (TypeError, ValueError):
+                    # Agar tipni o'zgartirib bo'lmasa → bu buyurtmani o'tkazib yuboramiz
+                    continue
+
                 cursor_service = await db.execute(
                     "SELECT api_id FROM services WHERE id = ?",
                     (service_id,)
@@ -61,7 +69,7 @@ async def edit_order():
                     )
 
                 if new_status == "Canceled":
-                    paid_amount = int(price or 0)
+                    paid_amount = int(price)   # endi price allaqachon float → xavfsiz int()
 
                     await bot.send_message(
                         user_id,
@@ -80,15 +88,13 @@ async def edit_order():
                         )
 
                 if new_status == "Partial":
-                    # 🔥 faqat shu qism tuzatildi
                     remains = int(status.get("remains", 0))
-                    price_int = int(price)
-                    quantity_int = int(quantity)
 
-                    if quantity_int > 0 and remains > 0:
-                        return_price = price_int * 100 * remains // quantity_int
+                    if quantity > 0 and remains > 0:
+                        # price allaqachon float bo'lgani uchun hisob-kitob to'g'ri bo'ladi
+                        return_price = int(price * 100 * remains / quantity)   # yaxshiroq: oxirida int()
 
-                        if return_price != 0:
+                        if return_price > 0:
                             await db.execute(
                                 "UPDATE users SET balance = balance + ? WHERE user_id = ?",
                                 (return_price, user_id)
@@ -99,6 +105,7 @@ async def edit_order():
 
     except Exception as e:
         await send_error(e)
+        return False
 
 
 async def order_updater():
