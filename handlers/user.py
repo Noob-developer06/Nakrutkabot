@@ -7,7 +7,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 
 from api_requests import send_order
-from config import FIO, karta, max_pay, min_pay, pay_methods, payments_channel_id, ref_bonus, support_channel_id
+from config import FIO, karta, visa, max_pay, min_pay, pay_methods, payments_channel_id, ref_bonus, support_channel_id
 from database.requests import add_user, get_service, get_user, add_order, sub_balance, add_balance, give_ref_bonus, get_order
 from keyboards.user import back, categories_kb, menu_kb, pay_methods_kb, platforms_kb, services_kb, start_order_kb, tolov_qildim, send_order_kb, subscribe_kb, orders_kb, back_to_orders, hisob_toldirish_kb
 from keyboards.admin import tolov_tasdiqla
@@ -150,7 +150,7 @@ class HisobToldirish(UserHandler):
                 method = callback.data.split(":")[1]
                 await state.update_data(pay_method=method)
                 await callback.message.answer(
-                    msg16.format(karta=karta, FIO=FIO, min_pay=min_pay, max_pay=max_pay),
+                    msg16.format(karta=karta, visa=visa, FIO=FIO, min_pay=min_pay, max_pay=max_pay),
                     reply_markup=tolov_qildim()
                 )
                 await callback.answer()
