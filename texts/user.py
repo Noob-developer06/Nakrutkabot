@@ -85,9 +85,13 @@ msg14 = """<b>👆🏻 Yuqoridagi banner orqali siz do'stlaringizni osongina bot
 
 msg15 = """<b>💵To'lov turini tanlang!</b>"""
 
-msg16 = """<b>⛔ Hisob karta raqami:</b>
+msg16 = f"""<b>⛔ Hisob karta raqamlari:</b>
 
- <code>{karta}</code>
+💳 <b>Uzcard / Humo:</b>
+<code>{karta}</code>
+
+💳 <b>Visa:</b>
+<code>{visa}</code>
 
 👤 {FIO}
 
