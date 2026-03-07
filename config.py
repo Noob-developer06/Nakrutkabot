@@ -13,6 +13,7 @@ ADMIN = 6870313968
 ref_bonus = 100
 
 karta = "9860350148113086"
+visa = "4916990322377653"
 FIO = "Perman Shamuratov"
 
 min_pay = 1000
