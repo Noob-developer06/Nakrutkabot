@@ -8,13 +8,13 @@ TOKEN = os.getenv("BOT_TOKEN")
 
 DB_PATH = "database/data.db"
 
-ADMIN = 6870313968
+ADMIN = 687031396
 
 ref_bonus = 100
 
-karta = "9860350148113086"
-visa = "4916990322377653"
-FIO = "Perman Shamuratov"
+karta = "9860356"
+visa = "49169903253"
+FIO = ""
 
 min_pay = 1000
 max_pay = 1000000
