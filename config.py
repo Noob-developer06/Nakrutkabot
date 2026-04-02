@@ -1,20 +1,19 @@
 import os
 from dotenv import load_dotenv
 
-# .env faylni yuklaymiz
 load_dotenv()
 
 TOKEN = os.getenv("BOT_TOKEN")
 
-DB_PATH = "database/data.db"
+DB_PATH = os.getenv("DB_PATH")
 
-ADMIN = 687031396
+ADMIN = int(os.getenv("ADMIN"))
 
-ref_bonus = 100
+ref_bonus = int(os.getenv("REF_BONUS"))
 
-karta = "9860356"
-visa = "49169903253"
-FIO = ""
+karta = os.getenv("KARTA")
+visa = os.getenv("VISA")
+FIO = os.getenv("FIO")
 
 min_pay = 1000
 max_pay = 1000000
