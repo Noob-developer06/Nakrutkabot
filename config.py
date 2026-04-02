@@ -9,7 +9,7 @@ DB_PATH = os.getenv("DB_PATH")
 
 ADMIN = int(os.getenv("ADMIN"))
 
-ref_bonus = int(os.getenv("REF_BONUS"))
+ref_bonus = 100
 
 karta = os.getenv("KARTA")
 visa = os.getenv("VISA")
