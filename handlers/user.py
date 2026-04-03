@@ -496,8 +496,8 @@ class MyOrders(UserHandler):
                     await callback.answer("Xizmat topilmadi", show_alert=True)
                     return
 
-                refill = service_data["refill"]
-                cancel = service_data["cancel"]
+                #refill = service_data["refill"]
+                #cancel = service_data["cancel"]
                 service_name = service_data["name"]
                 service_id = service_data["id"]
 
@@ -513,9 +513,7 @@ class MyOrders(UserHandler):
                         status=status
                     ),
                     reply_markup=back_to_orders(
-                        order_id,
-                        refill=refill,
-                        cancel=cancel
+                        order_id
                     ), disable_web_page_preview = True
                 )
 
